@@ -1,0 +1,81 @@
+﻿<Window x:Class="Workbase.TaskDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Task"
+        Width="460"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="#F5F7FB">
+
+    <Border Background="White"
+            Padding="26"
+            Margin="12"
+            CornerRadius="12">
+
+        <StackPanel>
+            <TextBlock x:Name="DialogTitle"
+                       Text="Create Task"
+                       FontSize="23"
+                       FontWeight="Bold"
+                       Foreground="#20243A"/>
+
+            <TextBlock Text="Title"
+                       Margin="0,24,0,7"
+                       FontWeight="SemiBold"/>
+
+            <TextBox x:Name="TitleTextBox"
+                     Height="38"
+                     Padding="9"
+                     FontSize="13"/>
+
+            <TextBlock Text="Description"
+                       Margin="0,18,0,7"
+                       FontWeight="SemiBold"/>
+
+            <TextBox x:Name="DescriptionTextBox"
+                     MinHeight="90"
+                     Padding="9"
+                     FontSize="13"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     VerticalScrollBarVisibility="Auto"/>
+
+            <TextBlock Text="Status"
+                       Margin="0,18,0,7"
+                       FontWeight="SemiBold"/>
+
+            <ComboBox x:Name="StatusComboBox"
+                      Height="36"
+                      Padding="8">
+                <ComboBoxItem Content="Todo"/>
+                <ComboBoxItem Content="In Progress"/>
+                <ComboBoxItem Content="Completed"/>
+            </ComboBox>
+
+            <TextBlock x:Name="ErrorText"
+                       Foreground="#DC2626"
+                       FontSize="12"
+                       Margin="0,10,0,0"
+                       TextWrapping="Wrap"/>
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,24,0,0">
+
+                <Button Content="Cancel"
+                        Padding="16,9"
+                        Margin="0,0,10,0"
+                        IsCancel="True"/>
+
+                <Button Content="Save Task"
+                        Padding="16,9"
+                        Background="#4F46E5"
+                        Foreground="White"
+                        BorderThickness="0"
+                        IsDefault="True"
+                        Click="Save_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>
