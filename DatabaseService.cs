@@ -89,6 +89,53 @@ namespace Workbase
 
                 migration.ExecuteNonQuery();
             }
+            EnsureProjectColumnExists(
+                connection,
+                "Deadline",
+                "TEXT NULL"
+            );
+
+            EnsureProjectColumnExists(
+                connection,
+                "Status",
+                "TEXT NOT NULL DEFAULT 'Planned'"
+            );
+        }
+
+        private static void EnsureProjectColumnExists(
+            SqliteConnection connection,
+            string columnName,
+            string columnDefinition)
+                {
+                    bool exists = false;
+
+                    using (var check = connection.CreateCommand())
+                    {
+                        check.CommandText = "PRAGMA table_info(Projects);";
+
+                        using var reader = check.ExecuteReader();
+
+                        while (reader.Read())
+                        {
+                            if (reader.GetString(1) == columnName)
+                            {
+                                exists = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (exists)
+                        return;
+
+                    using var alter = connection.CreateCommand();
+
+                    alter.CommandText = $@"
+                ALTER TABLE Projects
+                ADD COLUMN {columnName} {columnDefinition};
+            ";
+
+            alter.ExecuteNonQuery();
         }
 
         public static List<Project> GetProjects()
@@ -99,10 +146,10 @@ namespace Workbase
             using var command = connection.CreateCommand();
 
             command.CommandText = @"
-                SELECT Id, Name, Description
-                FROM Projects
-                ORDER BY Id DESC;
-            ";
+        SELECT Id, Name, Description, Deadline, Status
+        FROM Projects
+        ORDER BY Id DESC;
+    ";
 
             using var reader = command.ExecuteReader();
 
@@ -112,25 +159,44 @@ namespace Workbase
                 {
                     Id = reader.GetInt32(0),
                     Name = reader.GetString(1),
-                    Description = reader.GetString(2)
+                    Description = reader.GetString(2),
+
+                    Deadline = reader.IsDBNull(3)
+                        ? null
+                        : DateTime.Parse(reader.GetString(3)),
+
+                    Status = reader.GetString(4)
                 });
             }
 
             return projects;
         }
 
-        public static void AddProject(string name, string description)
+        public static void AddProject(
+            string name,
+            string description,
+            DateTime? deadline,
+            string status)
         {
             using var connection = OpenConnection();
             using var command = connection.CreateCommand();
 
             command.CommandText = @"
-                INSERT INTO Projects (Name, Description)
-                VALUES ($name, $description);
-            ";
+        INSERT INTO Projects (Name, Description, Deadline, Status)
+        VALUES ($name, $description, $deadline, $status);
+    ";
 
             command.Parameters.AddWithValue("$name", name);
             command.Parameters.AddWithValue("$description", description);
+
+            command.Parameters.AddWithValue(
+                "$deadline",
+                deadline.HasValue
+                    ? deadline.Value.ToString("yyyy-MM-dd")
+                    : DBNull.Value
+            );
+
+            command.Parameters.AddWithValue("$status", status);
 
             command.ExecuteNonQuery();
         }
@@ -138,20 +204,34 @@ namespace Workbase
         public static void UpdateProject(
             int id,
             string name,
-            string description)
+            string description,
+            DateTime? deadline,
+            string status)
         {
             using var connection = OpenConnection();
             using var command = connection.CreateCommand();
 
             command.CommandText = @"
-                UPDATE Projects
-                SET Name = $name, Description = $description
-                WHERE Id = $id;
-            ";
+        UPDATE Projects
+        SET Name = $name,
+            Description = $description,
+            Deadline = $deadline,
+            Status = $status
+        WHERE Id = $id;
+    ";
 
             command.Parameters.AddWithValue("$id", id);
             command.Parameters.AddWithValue("$name", name);
             command.Parameters.AddWithValue("$description", description);
+
+            command.Parameters.AddWithValue(
+                "$deadline",
+                deadline.HasValue
+                    ? deadline.Value.ToString("yyyy-MM-dd")
+                    : DBNull.Value
+            );
+
+            command.Parameters.AddWithValue("$status", status);
 
             command.ExecuteNonQuery();
         }

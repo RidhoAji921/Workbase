@@ -78,7 +78,9 @@ namespace Workbase
             {
                 DatabaseService.AddProject(
                     dialog.ProjectName,
-                    dialog.ProjectDescription);
+                    dialog.ProjectDescription,
+                    dialog.ProjectDeadline,
+                    dialog.ProjectStatus);
 
                 LoadProjects();
             }
@@ -104,7 +106,9 @@ namespace Workbase
                 DatabaseService.UpdateProject(
                     project.Id,
                     dialog.ProjectName,
-                    dialog.ProjectDescription);
+                    dialog.ProjectDescription,
+                    dialog.ProjectDeadline,
+                    dialog.ProjectStatus);
 
                 LoadProjects();
             }

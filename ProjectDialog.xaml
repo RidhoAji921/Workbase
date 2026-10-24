@@ -41,6 +41,29 @@
                      AcceptsReturn="True"
                      VerticalScrollBarVisibility="Auto"/>
 
+            <TextBlock Text="Deadline (Optional)"
+                       Margin="0,18,0,7"
+                       FontWeight="SemiBold"/>
+
+            <DatePicker x:Name="DeadlineDatePicker"
+                        Height="36"
+                        Padding="6"/>
+
+            <TextBlock Text="Status"
+                       Margin="0,18,0,7"
+                       FontWeight="SemiBold"/>
+
+            <ComboBox x:Name="StatusComboBox"
+                      Height="36"
+                      Padding="8"
+                      SelectedIndex="0">
+                <ComboBoxItem Content="Planned"/>
+                <ComboBoxItem Content="In Progress"/>
+                <ComboBoxItem Content="Ongoing"/>
+                <ComboBoxItem Content="Finished"/>
+                <ComboBoxItem Content="Dropped"/>
+            </ComboBox>
+
             <TextBlock x:Name="ErrorText"
                        Foreground="#DC2626"
                        FontSize="12"
