@@ -153,5 +153,50 @@ namespace Workbase
             NavigationService?.Navigate(
                 new ProjectDetailPage(project));
         }
+
+
+        public void OpenProject(Project project)
+        {
+            NavigationService?.Navigate(
+                new ProjectDetailPage(project));
+        }
+
+        public void EditProject(Project project)
+        {
+            var dialog = new ProjectDialog(project)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                DatabaseService.UpdateProject(
+                    project.Id,
+                    dialog.ProjectName,
+                    dialog.ProjectDescription,
+                    dialog.ProjectDeadline,
+                    dialog.ProjectStatus);
+
+                LoadProjects();
+            }
+        }
+
+        public void DeleteProject(Project project)
+        {
+            var result = MessageBox.Show(
+                $"Delete project '{project.Name}' and all its tasks?\n\n" +
+                "This action cannot be undone.",
+                "Delete Project",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            DatabaseService.DeleteProject(project.Id);
+
+            LoadProjects();
+        }
+
     }
 }
