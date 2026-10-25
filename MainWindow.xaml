@@ -175,31 +175,19 @@
             <StackPanel Margin="34,30,34,36">
 
                 <!-- Header -->
-                <Grid Margin="0,0,0,30">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0"
-                                VerticalAlignment="Center">
-                        <TextBlock Text="Overview"
+                <StackPanel Grid.Column="0"
+                                VerticalAlignment="Center"
+                            Margin="0,0,0,30">
+                    <TextBlock Text="Overview"
                                    FontSize="27"
                                    FontWeight="Bold"
                                    Foreground="{StaticResource TextBrush}"/>
 
-                        <TextBlock Text="Here's what's happening with your work today."
+                    <TextBlock Text="Here's what's happening with your work today."
                                    FontSize="13"
                                    Foreground="{StaticResource MutedBrush}"
                                    Margin="0,7,0,0"/>
-                    </StackPanel>
-
-                    <Button Grid.Column="1"
-                            Content="+   Add Task"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            VerticalAlignment="Center"
-                            MinWidth="125"/>
-                </Grid>
+                </StackPanel>
 
                 <!-- Summary cards -->
                 <UniformGrid Columns="3" Margin="0,0,0,30">
