@@ -4,165 +4,183 @@
       Title="Project Detail"
       Background="#F5F7FB">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="34,30,34,36">
+    <Page.Resources>
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#454B60"/>
+            <Setter Property="BorderBrush" Value="#E3E6EF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
 
-            <!-- Back button -->
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#20243A"/>
+        </Style>
+
+        <Style x:Key="MutedText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#777E91"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="34,28,34,36">
+
+            <!-- Navigation -->
             <Button Content="←  Back to Projects"
+                    Style="{StaticResource ActionButton}"
                     HorizontalAlignment="Left"
-                    Padding="12,8"
-                    Margin="0,0,0,26"
-                    Background="White"
-                    BorderBrush="#E8EAF1"
+                    Margin="0,0,0,24"
                     Click="BackToProjects_Click"/>
 
-            <!-- Project header -->
+            <!-- Project Header -->
             <Border Background="White"
                     BorderBrush="#E8EAF1"
                     BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="26">
+                    CornerRadius="14"
+                    Padding="28">
 
                 <StackPanel>
-                    <Border Background="#E8E7FF"
-                            CornerRadius="9"
-                            Padding="11"
-                            HorizontalAlignment="Left">
-                        <TextBlock Text="PROJECT"
-                                   FontSize="11"
-                                   FontWeight="Bold"
-                                   Foreground="#4F46E5"/>
-                    </Border>
 
-                    <TextBlock x:Name="ProjectNameText"
-                               Text="Project Name"
-                               FontSize="28"
-                               FontWeight="Bold"
-                               Foreground="#20243A"
-                               TextWrapping="Wrap"
-                               Margin="0,20,0,8"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0"
+                                    Margin="0,0,20,0">
+
+                            <TextBlock Text="PROJECT WORKSPACE"
+                                       FontSize="11"
+                                       FontWeight="Bold"
+                                       Foreground="#6366F1"/>
+
+                            <TextBlock x:Name="ProjectNameText"
+                                       Text="Project Name"
+                                       FontSize="28"
+                                       FontWeight="Bold"
+                                       Foreground="#20243A"
+                                       TextWrapping="Wrap"
+                                       Margin="0,10,0,0"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                Content="Edit Project"
+                                Style="{StaticResource ActionButton}"
+                                VerticalAlignment="Top"
+                                Click="EditProject_Click"/>
+                    </Grid>
 
                     <TextBlock x:Name="ProjectDescriptionText"
                                Text="Project description"
                                FontSize="14"
                                Foreground="#777E91"
-                               TextWrapping="Wrap"/>
+                               TextWrapping="Wrap"
+                               Margin="0,14,0,0"/>
 
                     <Border Height="1"
                             Background="#E8EAF1"
                             Margin="0,24,0,20"/>
 
-                    <TextBlock Text="Project Overview"
-                               FontSize="17"
+                    <TextBlock Text="Project Details"
+                               FontSize="14"
                                FontWeight="SemiBold"
-                               Foreground="#20243A"/>
+                               Foreground="#20243A"
+                               Margin="0,0,0,12"/>
 
-                    <TextBlock Text="This is your project workspace. You will be able to manage tasks and track progress here."
-                               FontSize="13"
-                               Foreground="#777E91"
-                               TextWrapping="Wrap"
-                               Margin="0,8,0,0"/>
+                    <WrapPanel VerticalAlignment="Center">
+
+                        <!-- Project Status -->
+                        <Border Background="#EEF2FF"
+                                CornerRadius="7"
+                                Padding="12,8"
+                                Margin="0,0,10,8">
+
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="STATUS"
+                                           FontSize="10"
+                                           FontWeight="Bold"
+                                           Foreground="#6366F1"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,8,0"/>
+
+                                <TextBlock x:Name="ProjectStatusText"
+                                           Text="Planned"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="#4338CA"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Deadline: hidden when no deadline exists -->
+                        <Border Background="#F8FAFC"
+                                BorderBrush="#E8EAF1"
+                                BorderThickness="1"
+                                CornerRadius="7"
+                                Padding="12,8"
+                                Margin="0,0,10,8">
+
+                            <TextBlock x:Name="ProjectDeadlineText"
+                                       Text=""
+                                       FontSize="12"
+                                       Foreground="#454B60"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+
+                    </WrapPanel>
                 </StackPanel>
             </Border>
 
+            <!-- Tasks Section Header -->
+            <Grid Margin="0,30,0,18">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <!-- Tasks section -->
-            <Grid Margin="0,30,0,16">
-                <StackPanel>
+                <StackPanel Grid.Column="0"
+                            VerticalAlignment="Center">
+
                     <TextBlock Text="Tasks"
-                   FontSize="20"
-                   FontWeight="Bold"
-                   Foreground="#20243A"/>
+                               Style="{StaticResource SectionTitle}"/>
 
                     <TextBlock x:Name="TaskCountText"
-                   Text="0 tasks"
-                   FontSize="12"
-                   Foreground="#777E91"
-                   Margin="0,5,0,0"/>
+                               Text="0 tasks"
+                               Style="{StaticResource MutedText}"
+                               Margin="0,5,0,0"/>
                 </StackPanel>
 
-                <Button Content="+  Add Task"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center"
-            Padding="15,10"
-            Background="#4F46E5"
-            Foreground="White"
-            BorderThickness="0"
-            Click="AddTask_Click"/>
+                <Button Grid.Column="1"
+                        Content="+  Add Task"
+                        Padding="16,10"
+                        Background="#4F46E5"
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontWeight="SemiBold"
+                        FontSize="12"
+                        Cursor="Hand"
+                        VerticalAlignment="Center"
+                        Click="AddTask_Click"/>
             </Grid>
 
-            <TextBlock x:Name="EmptyTasksText"
-           Text="No tasks yet. Create your first task."
-           FontSize="13"
-           Foreground="#777E91"
-           Margin="0,4,0,16"
-           Visibility="Collapsed"/>
-
-            <ItemsControl x:Name="TasksItemsControl">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Background="White"
-                    BorderBrush="#E8EAF1"
-                    BorderThickness="1"
-                    CornerRadius="10"
-                    Padding="18"
-                    Margin="0,0,0,12">
-
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-
-                                <StackPanel Grid.Column="0"
-                                Margin="0,0,12,0">
-                                    <TextBlock Text="{Binding Title}"
-                                   FontSize="15"
-                                   FontWeight="SemiBold"
-                                   Foreground="#20243A"
-                                   TextWrapping="Wrap"/>
-
-                                    <TextBlock Text="{Binding Description}"
-                                   FontSize="12"
-                                   Foreground="#777E91"
-                                   TextWrapping="Wrap"
-                                   Margin="0,7,0,10"/>
-
-                                    <TextBlock Text="{Binding Status}"
-                                   FontSize="11"
-                                   FontWeight="SemiBold"
-                                   Foreground="#4F46E5"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="1"
-                                Orientation="Horizontal"
-                                VerticalAlignment="Center">
-
-                                    <Button Content="Edit"
-                                Padding="12,7"
-                                Margin="0,0,8,0"
-                                Click="EditTask_Click"/>
-
-                                    <Button Content="Delete"
-                                Padding="12,7"
-                                Foreground="#DC2626"
-                                Click="DeleteTask_Click"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-
-
+            <!-- Empty State -->
             <Border Background="White"
                     BorderBrush="#E8EAF1"
                     BorderThickness="1"
                     CornerRadius="12"
-                    Padding="28">
+                    Padding="30"
+                    Margin="0,0,0,12">
 
-                <StackPanel HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
+                <StackPanel x:Name="EmptyTasksText"
+                            Visibility="Collapsed"
+                            HorizontalAlignment="Center">
 
                     <TextBlock Text="No tasks yet"
                                FontSize="16"
@@ -170,14 +188,103 @@
                                Foreground="#20243A"
                                HorizontalAlignment="Center"/>
 
-                    <TextBlock Text="Tasks for this project will appear here."
-                               FontSize="12"
-                               Foreground="#777E91"
-                               HorizontalAlignment="Center"
-                               TextWrapping="Wrap"
+                    <TextBlock Text="Create your first task to start organizing this project."
+                               Style="{StaticResource MutedText}"
+                               TextAlignment="Center"
                                Margin="0,8,0,0"/>
                 </StackPanel>
             </Border>
+
+            <!-- Task List -->
+            <ItemsControl x:Name="TasksItemsControl">
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+
+                        <Border Background="White"
+                                BorderBrush="#E8EAF1"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="20"
+                                Margin="0,0,0,12">
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Task Information -->
+                                <StackPanel Grid.Column="0"
+                                            Margin="0,0,18,0">
+
+                                    <TextBlock Text="{Binding Title}"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="#20243A"
+                                               TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="{Binding Description}"
+                                               FontSize="12"
+                                               Foreground="#777E91"
+                                               TextWrapping="Wrap"
+                                               Margin="0,7,0,10">
+
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility"
+                                                        Value="Visible"/>
+
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Description}"
+                                                                 Value="">
+                                                        <Setter Property="Visibility"
+                                                                Value="Collapsed"/>
+                                                    </DataTrigger>
+
+                                                    <DataTrigger Binding="{Binding Description}"
+                                                                 Value="{x:Null}">
+                                                        <Setter Property="Visibility"
+                                                                Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <Border Background="#F3F4F6"
+                                            CornerRadius="5"
+                                            Padding="8,4"
+                                            HorizontalAlignment="Left"
+                                            Margin="0,2,0,0">
+
+                                        <TextBlock Text="{Binding Status}"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#4B5563"/>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- Task Actions -->
+                                <StackPanel Grid.Column="1"
+                                            Orientation="Horizontal"
+                                            VerticalAlignment="Center">
+
+                                    <Button Content="Edit"
+                                            Style="{StaticResource ActionButton}"
+                                            Margin="0,0,8,0"
+                                            Click="EditTask_Click"/>
+
+                                    <Button Content="Delete"
+                                            Style="{StaticResource ActionButton}"
+                                            Foreground="#DC2626"
+                                            Click="DeleteTask_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
         </StackPanel>
     </ScrollViewer>

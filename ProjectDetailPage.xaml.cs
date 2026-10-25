@@ -25,6 +25,12 @@ namespace Workbase
 
             TasksItemsControl.ItemsSource = tasks;
 
+            ProjectNameText.Text = project.Name;
+
+            UpdateProjectInformation();
+
+            TasksItemsControl.ItemsSource = tasks;
+
             LoadTasks();
         }
 
@@ -118,11 +124,59 @@ namespace Workbase
             LoadTasks();
         }
 
+        private void EditProject_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            var dialog = new ProjectDialog(project)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                DatabaseService.UpdateProject(
+                    project.Id,
+                    dialog.ProjectName,
+                    dialog.ProjectDescription,
+                    dialog.ProjectDeadline,
+                    dialog.ProjectStatus);
+
+                project.Name = dialog.ProjectName;
+                project.Description = dialog.ProjectDescription;
+                project.Deadline = dialog.ProjectDeadline;
+                project.Status = dialog.ProjectStatus;
+
+                ProjectNameText.Text = project.Name;
+                UpdateProjectInformation();
+            }
+        }
+
         private void BackToProjects_Click(
             object sender,
             RoutedEventArgs e)
         {
             NavigationService?.Navigate(new ProjectsPage());
+        }
+
+        private void UpdateProjectInformation()
+        {
+            ProjectDescriptionText.Text = project.Description;
+
+            ProjectDescriptionText.Visibility =
+                string.IsNullOrWhiteSpace(project.Description)
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+
+            ProjectStatusText.Text = project.Status;
+
+            ProjectDeadlineText.Text =
+                project.Deadline?.ToString("dd MMM yyyy") ?? "";
+
+            ProjectDeadlineText.Visibility =
+                project.Deadline.HasValue
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
         }
     }
 }
