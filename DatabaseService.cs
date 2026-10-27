@@ -30,6 +30,7 @@ namespace Workbase
             return connection;
         }
 
+
         public static void Initialize()
         {
             Directory.CreateDirectory(
@@ -39,26 +40,38 @@ namespace Workbase
             using var connection = OpenConnection();
             using var command = connection.CreateCommand();
 
+            // 1. Buat semua tabel terlebih dahulu.
             command.CommandText = @"
-                CREATE TABLE IF NOT EXISTS Projects (
-                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Name TEXT NOT NULL,
-                    Description TEXT NOT NULL DEFAULT ''
-                );
+        CREATE TABLE IF NOT EXISTS Projects (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            Name TEXT NOT NULL,
+            Description TEXT NOT NULL DEFAULT ''
+        );
 
-                CREATE TABLE IF NOT EXISTS Tasks (
-                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Title TEXT NOT NULL,
-                    Description TEXT,
-                    Status TEXT NOT NULL DEFAULT 'Todo',
-                    ProjectId INTEGER REFERENCES Projects(Id)
-                        ON DELETE CASCADE
-                );
-            ";
+        CREATE TABLE IF NOT EXISTS Tasks (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            Title TEXT NOT NULL,
+            Description TEXT,
+            Status TEXT NOT NULL DEFAULT 'Todo',
+            ProjectId INTEGER REFERENCES Projects(Id)
+                ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS ProjectTaskStatuses (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ProjectId INTEGER NOT NULL
+                REFERENCES Projects(Id) ON DELETE CASCADE,
+            Name TEXT NOT NULL,
+            SortOrder INTEGER NOT NULL DEFAULT 0,
+            IsCompleted INTEGER NOT NULL DEFAULT 0,
+            UNIQUE(ProjectId, Name)
+        );
+    ";
 
             command.ExecuteNonQuery();
 
-            // Migrasi database lama yang sudah memiliki tabel Tasks.
+            // 2. Migrasi database lama:
+            // tambahkan ProjectId jika belum tersedia.
             bool hasProjectId = false;
 
             using (var check = connection.CreateCommand())
@@ -82,13 +95,15 @@ namespace Workbase
                 using var migration = connection.CreateCommand();
 
                 migration.CommandText = @"
-                    ALTER TABLE Tasks
-                    ADD COLUMN ProjectId INTEGER
-                    REFERENCES Projects(Id) ON DELETE CASCADE;
-                ";
+            ALTER TABLE Tasks
+            ADD COLUMN ProjectId INTEGER
+            REFERENCES Projects(Id) ON DELETE CASCADE;
+        ";
 
                 migration.ExecuteNonQuery();
             }
+
+            // 3. Pastikan kolom tambahan Projects tersedia.
             EnsureProjectColumnExists(
                 connection,
                 "Deadline",
@@ -100,7 +115,11 @@ namespace Workbase
                 "Status",
                 "TEXT NOT NULL DEFAULT 'Planned'"
             );
+
+            // 4. Buat workflow default untuk proyek yang belum memilikinya.
+            EnsureDefaultTaskStatuses(connection);
         }
+
 
         private static void EnsureProjectColumnExists(
             SqliteConnection connection,
@@ -172,6 +191,7 @@ namespace Workbase
             return projects;
         }
 
+
         public static void AddProject(
             string name,
             string description,
@@ -179,27 +199,77 @@ namespace Workbase
             string status)
         {
             using var connection = OpenConnection();
-            using var command = connection.CreateCommand();
+            using var transaction = connection.BeginTransaction();
 
-            command.CommandText = @"
-        INSERT INTO Projects (Name, Description, Deadline, Status)
-        VALUES ($name, $description, $deadline, $status);
-    ";
+            // 1. Simpan proyek.
+            long projectId;
 
-            command.Parameters.AddWithValue("$name", name);
-            command.Parameters.AddWithValue("$description", description);
+            using (var command = connection.CreateCommand())
+            {
+                command.Transaction = transaction;
 
-            command.Parameters.AddWithValue(
-                "$deadline",
-                deadline.HasValue
-                    ? deadline.Value.ToString("yyyy-MM-dd")
-                    : DBNull.Value
+                command.CommandText = @"
+            INSERT INTO Projects (
+                Name,
+                Description,
+                Deadline,
+                Status
+            )
+            VALUES (
+                $name,
+                $description,
+                $deadline,
+                $status
             );
 
-            command.Parameters.AddWithValue("$status", status);
+            SELECT last_insert_rowid();
+        ";
 
-            command.ExecuteNonQuery();
+                command.Parameters.AddWithValue("$name", name);
+                command.Parameters.AddWithValue("$description", description);
+
+                command.Parameters.AddWithValue(
+                    "$deadline",
+                    deadline.HasValue
+                        ? deadline.Value.ToString("yyyy-MM-dd")
+                        : DBNull.Value
+                );
+
+                command.Parameters.AddWithValue("$status", status);
+
+                projectId = (long)command.ExecuteScalar()!;
+            }
+
+            // 2. Buat workflow default untuk proyek baru.
+            using (var statusCommand = connection.CreateCommand())
+            {
+                statusCommand.Transaction = transaction;
+
+                statusCommand.CommandText = @"
+            INSERT INTO ProjectTaskStatuses (
+                ProjectId,
+                Name,
+                SortOrder,
+                IsCompleted
+            )
+            VALUES
+                ($projectId, 'Todo', 0, 0),
+                ($projectId, 'In Progress', 1, 0),
+                ($projectId, 'Completed', 2, 1);
+        ";
+
+                statusCommand.Parameters.AddWithValue(
+                    "$projectId",
+                    projectId
+                );
+
+                statusCommand.ExecuteNonQuery();
+            }
+
+            // 3. Simpan kedua perubahan sekaligus.
+            transaction.Commit();
         }
+
 
         public static void UpdateProject(
             int id,
@@ -350,6 +420,69 @@ namespace Workbase
 
             command.Parameters.AddWithValue("$id", id);
             command.ExecuteNonQuery();
+        }
+
+
+        private static void EnsureDefaultTaskStatuses(
+            SqliteConnection connection)
+        {
+            using var command = connection.CreateCommand();
+
+            command.CommandText = @"
+        INSERT INTO ProjectTaskStatuses
+            (ProjectId, Name, SortOrder, IsCompleted)
+        SELECT p.Id, defaults.Name,
+               defaults.SortOrder, defaults.IsCompleted
+        FROM Projects p
+        CROSS JOIN (
+            SELECT 'Todo' AS Name, 0 AS SortOrder, 0 AS IsCompleted
+            UNION ALL
+            SELECT 'In Progress', 1, 0
+            UNION ALL
+            SELECT 'Completed', 2, 1
+        ) AS defaults
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM ProjectTaskStatuses s
+            WHERE s.ProjectId = p.Id
+        );
+    ";
+
+            command.ExecuteNonQuery();
+        }
+
+        public static List<ProjectTaskStatus> GetTaskStatusesForProject(
+            int projectId)
+        {
+            var statuses = new List<ProjectTaskStatus>();
+
+            using var connection = OpenConnection();
+            using var command = connection.CreateCommand();
+
+            command.CommandText = @"
+                SELECT Id, ProjectId, Name, SortOrder, IsCompleted
+                FROM ProjectTaskStatuses
+                WHERE ProjectId = $projectId
+                ORDER BY SortOrder, Id;
+            ";
+
+            command.Parameters.AddWithValue("$projectId", projectId);
+
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                statuses.Add(new ProjectTaskStatus
+                {
+                    Id = reader.GetInt32(0),
+                    ProjectId = reader.GetInt32(1),
+                    Name = reader.GetString(2),
+                    SortOrder = reader.GetInt32(3),
+                    IsCompleted = reader.GetInt32(4) != 0
+                });
+            }
+
+            return statuses;
         }
 
     }
