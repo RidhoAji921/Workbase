@@ -11,6 +11,13 @@ namespace Workbase
 
         public string Description { get; set; } = "";
 
-        public string Status { get; set; } = "Todo";
+        public int StatusId { get; set; }
+
+        // Nama status untuk ditampilkan di UI.
+        public string Status { get; set; } = "";
+
+        public string Priority { get; set; } = "Medium";
+
+        public DateTime? Deadline { get; set; }
     }
 }

@@ -40,21 +40,13 @@ namespace Workbase
             using var connection = OpenConnection();
             using var command = connection.CreateCommand();
 
-            // 1. Buat semua tabel terlebih dahulu.
             command.CommandText = @"
         CREATE TABLE IF NOT EXISTS Projects (
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
             Name TEXT NOT NULL,
-            Description TEXT NOT NULL DEFAULT ''
-        );
-
-        CREATE TABLE IF NOT EXISTS Tasks (
-            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-            Title TEXT NOT NULL,
-            Description TEXT,
-            Status TEXT NOT NULL DEFAULT 'Todo',
-            ProjectId INTEGER REFERENCES Projects(Id)
-                ON DELETE CASCADE
+            Description TEXT NOT NULL DEFAULT '',
+            Deadline TEXT NULL,
+            Status TEXT NOT NULL DEFAULT 'Planned'
         );
 
         CREATE TABLE IF NOT EXISTS ProjectTaskStatuses (
@@ -66,60 +58,24 @@ namespace Workbase
             IsCompleted INTEGER NOT NULL DEFAULT 0,
             UNIQUE(ProjectId, Name)
         );
+
+        CREATE TABLE IF NOT EXISTS Tasks (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            Title TEXT NOT NULL,
+            Description TEXT NOT NULL DEFAULT '',
+            ProjectId INTEGER NOT NULL
+                REFERENCES Projects(Id) ON DELETE CASCADE,
+            StatusId INTEGER NOT NULL
+                REFERENCES ProjectTaskStatuses(Id),
+            Priority TEXT NOT NULL DEFAULT 'Medium',
+            Deadline TEXT NULL
+        );
     ";
 
             command.ExecuteNonQuery();
 
-            // 2. Migrasi database lama:
-            // tambahkan ProjectId jika belum tersedia.
-            bool hasProjectId = false;
-
-            using (var check = connection.CreateCommand())
-            {
-                check.CommandText = "PRAGMA table_info(Tasks);";
-
-                using var reader = check.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    if (reader.GetString(1) == "ProjectId")
-                    {
-                        hasProjectId = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!hasProjectId)
-            {
-                using var migration = connection.CreateCommand();
-
-                migration.CommandText = @"
-            ALTER TABLE Tasks
-            ADD COLUMN ProjectId INTEGER
-            REFERENCES Projects(Id) ON DELETE CASCADE;
-        ";
-
-                migration.ExecuteNonQuery();
-            }
-
-            // 3. Pastikan kolom tambahan Projects tersedia.
-            EnsureProjectColumnExists(
-                connection,
-                "Deadline",
-                "TEXT NULL"
-            );
-
-            EnsureProjectColumnExists(
-                connection,
-                "Status",
-                "TEXT NOT NULL DEFAULT 'Planned'"
-            );
-
-            // 4. Buat workflow default untuk proyek yang belum memilikinya.
             EnsureDefaultTaskStatuses(connection);
         }
-
 
         private static void EnsureProjectColumnExists(
             SqliteConnection connection,
@@ -334,10 +290,20 @@ namespace Workbase
             using var command = connection.CreateCommand();
 
             command.CommandText = @"
-        SELECT Id, ProjectId, Title, Description, Status
-        FROM Tasks
-        WHERE ProjectId = $projectId
-        ORDER BY Id DESC;
+        SELECT
+            t.Id,
+            t.ProjectId,
+            t.Title,
+            t.Description,
+            t.StatusId,
+            s.Name AS Status,
+            t.Priority,
+            t.Deadline
+        FROM Tasks t
+        INNER JOIN ProjectTaskStatuses s
+            ON s.Id = t.StatusId
+        WHERE t.ProjectId = $projectId
+        ORDER BY t.Id DESC;
     ";
 
             command.Parameters.AddWithValue("$projectId", projectId);
@@ -354,7 +320,12 @@ namespace Workbase
                     Description = reader.IsDBNull(3)
                         ? ""
                         : reader.GetString(3),
-                    Status = reader.GetString(4)
+                    StatusId = reader.GetInt32(4),
+                    Status = reader.GetString(5),
+                    Priority = reader.GetString(6),
+                    Deadline = reader.IsDBNull(7)
+                        ? null
+                        : DateTime.Parse(reader.GetString(7))
                 });
             }
 
@@ -365,47 +336,104 @@ namespace Workbase
             int projectId,
             string title,
             string description,
-            string status)
+            int statusId,
+            string priority,
+            DateTime? deadline)
         {
             using var connection = OpenConnection();
             using var command = connection.CreateCommand();
 
             command.CommandText = @"
-        INSERT INTO Tasks (ProjectId, Title, Description, Status)
-        VALUES ($projectId, $title, $description, $status);
+        INSERT INTO Tasks (
+            ProjectId,
+            Title,
+            Description,
+            StatusId,
+            Priority,
+            Deadline
+        )
+        SELECT
+            $projectId,
+            $title,
+            $description,
+            s.Id,
+            $priority,
+            $deadline
+        FROM ProjectTaskStatuses s
+        WHERE s.Id = $statusId
+          AND s.ProjectId = $projectId;
     ";
 
             command.Parameters.AddWithValue("$projectId", projectId);
             command.Parameters.AddWithValue("$title", title);
             command.Parameters.AddWithValue("$description", description);
-            command.Parameters.AddWithValue("$status", status);
+            command.Parameters.AddWithValue("$statusId", statusId);
+            command.Parameters.AddWithValue("$priority", priority);
+            command.Parameters.AddWithValue(
+                "$deadline",
+                deadline.HasValue
+                    ? deadline.Value.ToString("yyyy-MM-dd")
+                    : DBNull.Value
+            );
 
-            command.ExecuteNonQuery();
+            int rowsAffected = command.ExecuteNonQuery();
+
+            if (rowsAffected == 0)
+            {
+                throw new InvalidOperationException(
+                    "The selected task status does not belong to this project."
+                );
+            }
         }
 
         public static void UpdateTask(
             int id,
             string title,
             string description,
-            string status)
+            int statusId,
+            string priority,
+            DateTime? deadline)
         {
             using var connection = OpenConnection();
             using var command = connection.CreateCommand();
 
             command.CommandText = @"
         UPDATE Tasks
-        SET Title = $title,
+        SET
+            Title = $title,
             Description = $description,
-            Status = $status
-        WHERE Id = $id;
+            StatusId = $statusId,
+            Priority = $priority,
+            Deadline = $deadline
+        WHERE Id = $id
+          AND EXISTS (
+              SELECT 1
+              FROM ProjectTaskStatuses s
+              WHERE s.Id = $statusId
+                AND s.ProjectId = Tasks.ProjectId
+          );
     ";
 
             command.Parameters.AddWithValue("$id", id);
             command.Parameters.AddWithValue("$title", title);
             command.Parameters.AddWithValue("$description", description);
-            command.Parameters.AddWithValue("$status", status);
+            command.Parameters.AddWithValue("$statusId", statusId);
+            command.Parameters.AddWithValue("$priority", priority);
+            command.Parameters.AddWithValue(
+                "$deadline",
+                deadline.HasValue
+                    ? deadline.Value.ToString("yyyy-MM-dd")
+                    : DBNull.Value
+            );
 
-            command.ExecuteNonQuery();
+            int rowsAffected = command.ExecuteNonQuery();
+
+            if (rowsAffected == 0)
+            {
+                throw new InvalidOperationException(
+                    "Task not found or the selected status does not belong to its project."
+                );
+            }
         }
 
         public static void DeleteTask(int id)

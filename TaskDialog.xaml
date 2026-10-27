@@ -29,29 +29,71 @@
                      Padding="9"
                      FontSize="13"/>
 
-            <TextBlock Text="Description"
+            <TextBlock Text="Description (Optional)"
                        Margin="0,18,0,7"
                        FontWeight="SemiBold"/>
 
             <TextBox x:Name="DescriptionTextBox"
-                     MinHeight="90"
+                     MinHeight="80"
                      Padding="9"
                      FontSize="13"
                      TextWrapping="Wrap"
                      AcceptsReturn="True"
                      VerticalScrollBarVisibility="Auto"/>
 
-            <TextBlock Text="Status"
+            <Grid Margin="0,18,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="14"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Status"
+                               Margin="0,0,0,7"
+                               FontWeight="SemiBold"/>
+
+                    <ComboBox x:Name="StatusComboBox"
+                              Height="36"
+                              Padding="8"
+                              DisplayMemberPath="Name"
+                              SelectedValuePath="Id"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Priority"
+                               Margin="0,0,0,7"
+                               FontWeight="SemiBold"/>
+
+                    <ComboBox x:Name="PriorityComboBox"
+                              Height="36"
+                              Padding="8">
+                        <ComboBoxItem Content="Low"/>
+                        <ComboBoxItem Content="Medium"/>
+                        <ComboBoxItem Content="High"/>
+                        <ComboBoxItem Content="Urgent"/>
+                    </ComboBox>
+                </StackPanel>
+            </Grid>
+
+            <TextBlock Text="Deadline (Optional)"
                        Margin="0,18,0,7"
                        FontWeight="SemiBold"/>
 
-            <ComboBox x:Name="StatusComboBox"
-                      Height="36"
-                      Padding="8">
-                <ComboBoxItem Content="Todo"/>
-                <ComboBoxItem Content="In Progress"/>
-                <ComboBoxItem Content="Completed"/>
-            </ComboBox>
+            <DatePicker x:Name="DeadlineDatePicker"
+                        Height="36"
+                        Padding="6"/>
+
+            <Button x:Name="ClearDeadlineButton"
+                    Content="Clear deadline"
+                    HorizontalAlignment="Left"
+                    Margin="0,5,0,0"
+                    Padding="0,3"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Foreground="#6366F1"
+                    Cursor="Hand"
+                    Click="ClearDeadline_Click"/>
 
             <TextBlock x:Name="ErrorText"
                        Foreground="#DC2626"

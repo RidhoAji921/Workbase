@@ -51,11 +51,9 @@ namespace Workbase
                 : Visibility.Collapsed;
         }
 
-        private void AddTask_Click(
-            object sender,
-            RoutedEventArgs e)
+        private void AddTask_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new TaskDialog
+            var dialog = new TaskDialog(project.Id)
             {
                 Owner = Window.GetWindow(this)
             };
@@ -66,15 +64,16 @@ namespace Workbase
                     project.Id,
                     dialog.TaskTitle,
                     dialog.TaskDescription,
-                    dialog.TaskStatus);
+                    dialog.TaskStatusId,
+                    dialog.TaskPriority,
+                    dialog.TaskDeadline
+                );
 
                 LoadTasks();
             }
         }
 
-        private void EditTask_Click(
-            object sender,
-            RoutedEventArgs e)
+        private void EditTask_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not FrameworkElement element ||
                 element.DataContext is not ProjectTask task)
@@ -82,7 +81,7 @@ namespace Workbase
                 return;
             }
 
-            var dialog = new TaskDialog(task)
+            var dialog = new TaskDialog(project.Id, task)
             {
                 Owner = Window.GetWindow(this)
             };
@@ -93,7 +92,10 @@ namespace Workbase
                     task.Id,
                     dialog.TaskTitle,
                     dialog.TaskDescription,
-                    dialog.TaskStatus);
+                    dialog.TaskStatusId,
+                    dialog.TaskPriority,
+                    dialog.TaskDeadline
+                );
 
                 LoadTasks();
             }
