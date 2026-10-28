@@ -657,5 +657,34 @@ namespace Workbase
             return tasks;
         }
 
+        public static List<ProjectTaskStatus> GetAllTaskStatuses()
+        {
+            var statuses = new List<ProjectTaskStatus>();
+
+            using var connection = OpenConnection();
+            using var command = connection.CreateCommand();
+
+            command.CommandText = @"
+        SELECT Id, ProjectId, Name, SortOrder, IsCompleted
+        FROM ProjectTaskStatuses
+        ORDER BY ProjectId, SortOrder, Id;
+    ";
+
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                statuses.Add(new ProjectTaskStatus
+                {
+                    Id = reader.GetInt32(0),
+                    ProjectId = reader.GetInt32(1),
+                    Name = reader.GetString(2),
+                    SortOrder = reader.GetInt32(3),
+                    IsCompleted = reader.GetInt32(4) != 0
+                });
+            }
+
+            return statuses;
+        }
     }
 }
