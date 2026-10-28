@@ -198,5 +198,34 @@ namespace Workbase
             LoadProjects();
         }
 
+        private void ProjectCard_OpenRequested(Project project)
+        {
+            OpenProject(project);
+        }
+
+        private void ProjectCard_EditRequested(Project project)
+        {
+            EditProject(project);
+        }
+
+        private void ProjectCard_DeleteRequested(Project project)
+        {
+            DeleteProject(project);
+        }
+        private void ProjectCard_Loaded(
+            object sender,
+            RoutedEventArgs e)
+        {
+            if (sender is not ProjectCard card)
+                return;
+
+            card.OpenRequested -= ProjectCard_OpenRequested;
+            card.EditRequested -= ProjectCard_EditRequested;
+            card.DeleteRequested -= ProjectCard_DeleteRequested;
+
+            card.OpenRequested += ProjectCard_OpenRequested;
+            card.EditRequested += ProjectCard_EditRequested;
+            card.DeleteRequested += ProjectCard_DeleteRequested;
+        }
     }
 }

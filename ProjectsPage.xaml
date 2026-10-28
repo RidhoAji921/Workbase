@@ -70,7 +70,7 @@
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <local:ProjectCard />
+                        <local:ProjectCard Loaded="ProjectCard_Loaded"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

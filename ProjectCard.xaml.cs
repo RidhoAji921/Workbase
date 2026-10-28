@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -6,6 +7,10 @@ namespace Workbase
 {
     public partial class ProjectCard : UserControl
     {
+        public event Action<Project>? OpenRequested;
+        public event Action<Project>? EditRequested;
+        public event Action<Project>? DeleteRequested;
+
         public ProjectCard()
         {
             InitializeComponent();
@@ -15,53 +20,24 @@ namespace Workbase
             object sender,
             RoutedEventArgs e)
         {
-            if (DataContext is not Project project)
-                return;
-
-            var page = FindParentPage();
-
-            page?.OpenProject(project);
+            if (DataContext is Project project)
+                OpenRequested?.Invoke(project);
         }
 
         private void EditProject_Click(
             object sender,
             RoutedEventArgs e)
         {
-            if (DataContext is not Project project)
-                return;
-
-            var page = FindParentPage();
-
-            page?.EditProject(project);
+            if (DataContext is Project project)
+                EditRequested?.Invoke(project);
         }
 
         private void DeleteProject_Click(
             object sender,
             RoutedEventArgs e)
         {
-            if (DataContext is not Project project)
-                return;
-
-            var page = FindParentPage();
-
-            page?.DeleteProject(project);
-        }
-
-        private ProjectsPage? FindParentPage()
-        {
-            DependencyObject? current = this;
-
-            while (current != null)
-            {
-                if (current is ProjectsPage page)
-                    return page;
-
-                current =
-                    System.Windows.Media.VisualTreeHelper
-                        .GetParent(current);
-            }
-
-            return null;
+            if (DataContext is Project project)
+                DeleteRequested?.Invoke(project);
         }
     }
 }

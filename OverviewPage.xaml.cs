@@ -28,8 +28,8 @@ namespace Workbase
         }
 
         private void AddProject_Click(
-            object sender,
-            RoutedEventArgs e)
+    object sender,
+    RoutedEventArgs e)
         {
             var dialog = new ProjectDialog
             {
@@ -42,23 +42,35 @@ namespace Workbase
                     dialog.ProjectName,
                     dialog.ProjectDescription,
                     dialog.ProjectDeadline,
-                    dialog.ProjectStatus
-                );
+                    dialog.ProjectStatus);
 
                 LoadProjects();
             }
         }
 
-        private void EditProject_Click(
+        private void ProjectCard_Loaded(
             object sender,
             RoutedEventArgs e)
         {
-            if (sender is not FrameworkElement element ||
-                element.DataContext is not Project project)
-            {
+            if (sender is not ProjectCard card)
                 return;
-            }
 
+            card.OpenRequested -= ProjectCard_OpenRequested;
+            card.EditRequested -= ProjectCard_EditRequested;
+            card.DeleteRequested -= ProjectCard_DeleteRequested;
+
+            card.OpenRequested += ProjectCard_OpenRequested;
+            card.EditRequested += ProjectCard_EditRequested;
+            card.DeleteRequested += ProjectCard_DeleteRequested;
+        }
+
+        private void ProjectCard_OpenRequested(Project project)
+        {
+            NavigationService?.Navigate(new ProjectDetailPage(project));
+        }
+
+        private void ProjectCard_EditRequested(Project project)
+        {
             var dialog = new ProjectDialog(project)
             {
                 Owner = Window.GetWindow(this)
@@ -71,35 +83,23 @@ namespace Workbase
                     dialog.ProjectName,
                     dialog.ProjectDescription,
                     dialog.ProjectDeadline,
-                    dialog.ProjectStatus
-                );
+                    dialog.ProjectStatus);
 
                 LoadProjects();
             }
         }
 
-        private void DeleteProject_Click(
-            object sender,
-            RoutedEventArgs e)
+        private void ProjectCard_DeleteRequested(Project project)
         {
-            if (sender is not FrameworkElement element ||
-                element.DataContext is not Project project)
-            {
-                return;
-            }
-
             var result = MessageBox.Show(
                 $"Delete project '{project.Name}' and all its tasks?\n\n" +
                 "This action cannot be undone.",
                 "Delete Project",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Warning
-            );
+                MessageBoxImage.Warning);
 
             if (result != MessageBoxResult.Yes)
-            {
                 return;
-            }
 
             DatabaseService.DeleteProject(project.Id);
             LoadProjects();
