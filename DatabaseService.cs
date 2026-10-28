@@ -296,7 +296,8 @@ namespace Workbase
             t.Title,
             t.Description,
             t.StatusId,
-            s.Name AS Status,
+            s.Name,
+            s.IsCompleted,
             t.Priority,
             t.Deadline
         FROM Tasks t
@@ -322,10 +323,11 @@ namespace Workbase
                         : reader.GetString(3),
                     StatusId = reader.GetInt32(4),
                     Status = reader.GetString(5),
-                    Priority = reader.GetString(6),
-                    Deadline = reader.IsDBNull(7)
+                    IsCompleted = reader.GetInt32(6) != 0,
+                    Priority = reader.GetString(7),
+                    Deadline = reader.IsDBNull(8)
                         ? null
-                        : DateTime.Parse(reader.GetString(7))
+                        : DateTime.Parse(reader.GetString(8))
                 });
             }
 

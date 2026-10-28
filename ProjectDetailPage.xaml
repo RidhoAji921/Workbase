@@ -214,55 +214,172 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
+
                                 <!-- Task Information -->
                                 <StackPanel Grid.Column="0"
-                                            Margin="0,0,18,0">
+            Margin="0,0,18,0">
 
+                                    <!-- Task Title -->
                                     <TextBlock Text="{Binding Title}"
-                                               FontSize="15"
-                                               FontWeight="SemiBold"
-                                               Foreground="#20243A"
-                                               TextWrapping="Wrap"/>
+               FontSize="15"
+               FontWeight="SemiBold"
+               Foreground="#20243A"
+               TextWrapping="Wrap"/>
 
+                                    <!-- Task Description -->
                                     <TextBlock Text="{Binding Description}"
-                                               FontSize="12"
-                                               Foreground="#777E91"
-                                               TextWrapping="Wrap"
-                                               Margin="0,7,0,10">
+               FontSize="12"
+               Foreground="#777E91"
+               TextWrapping="Wrap"
+               Margin="0,7,0,10">
 
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
-                                                <Setter Property="Visibility"
-                                                        Value="Visible"/>
+                                                <Setter Property="Visibility" Value="Visible"/>
 
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Description}"
-                                                                 Value="">
+                                 Value="">
                                                         <Setter Property="Visibility"
-                                                                Value="Collapsed"/>
+                                Value="Collapsed"/>
                                                     </DataTrigger>
 
                                                     <DataTrigger Binding="{Binding Description}"
-                                                                 Value="{x:Null}">
+                                 Value="{x:Null}">
                                                         <Setter Property="Visibility"
-                                                                Value="Collapsed"/>
+                                Value="Collapsed"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </TextBlock.Style>
                                     </TextBlock>
 
-                                    <Border Background="#F3F4F6"
-                                            CornerRadius="5"
-                                            Padding="8,4"
-                                            HorizontalAlignment="Left"
-                                            Margin="0,2,0,0">
+                                    <!-- Status and Priority -->
+                                    <WrapPanel Margin="0,2,0,0">
 
-                                        <TextBlock Text="{Binding Status}"
-                                                   FontSize="11"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="#4B5563"/>
-                                    </Border>
+                                        <!-- Status -->
+                                        <Border Background="#F3F4F6"
+                CornerRadius="5"
+                Padding="8,4"
+                Margin="0,0,8,6">
+
+                                            <TextBlock Text="{Binding Status}"
+                       FontSize="11"
+                       FontWeight="SemiBold"
+                       Foreground="#4B5563"/>
+                                        </Border>
+
+                                        <!-- Priority -->
+                                        <Border CornerRadius="5"
+                Padding="8,4"
+                Margin="0,0,8,6">
+
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#F3F4F6"/>
+
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Priority}"
+                                     Value="Low">
+                                                            <Setter Property="Background" Value="#F0FDF4"/>
+                                                        </DataTrigger>
+
+                                                        <DataTrigger Binding="{Binding Priority}"
+                                     Value="Medium">
+                                                            <Setter Property="Background" Value="#EFF6FF"/>
+                                                        </DataTrigger>
+
+                                                        <DataTrigger Binding="{Binding Priority}"
+                                     Value="High">
+                                                            <Setter Property="Background" Value="#FFF7ED"/>
+                                                        </DataTrigger>
+
+                                                        <DataTrigger Binding="{Binding Priority}"
+                                     Value="Urgent">
+                                                            <Setter Property="Background" Value="#FEF2F2"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+
+                                            <TextBlock Text="{Binding Priority}"
+                       FontSize="11"
+                       FontWeight="SemiBold">
+
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="#4B5563"/>
+
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Priority}"
+                                         Value="Low">
+                                                                <Setter Property="Foreground" Value="#15803D"/>
+                                                            </DataTrigger>
+
+                                                            <DataTrigger Binding="{Binding Priority}"
+                                         Value="Medium">
+                                                                <Setter Property="Foreground" Value="#1D4ED8"/>
+                                                            </DataTrigger>
+
+                                                            <DataTrigger Binding="{Binding Priority}"
+                                         Value="High">
+                                                                <Setter Property="Foreground" Value="#C2410C"/>
+                                                            </DataTrigger>
+
+                                                            <DataTrigger Binding="{Binding Priority}"
+                                         Value="Urgent">
+                                                                <Setter Property="Foreground" Value="#DC2626"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+
+                                        <!-- Deadline -->
+                                        <Border CornerRadius="5"
+                Padding="8,4"
+                Margin="0,0,0,6">
+
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#F8FAFC"/>
+                                                    <Setter Property="BorderBrush" Value="#E8EAF1"/>
+                                                    <Setter Property="BorderThickness" Value="1"/>
+
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsOverdue}"
+                                     Value="True">
+                                                            <Setter Property="Background" Value="#FEF2F2"/>
+                                                            <Setter Property="BorderBrush" Value="#FECACA"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+
+                                            <TextBlock FontSize="11"
+                       FontWeight="SemiBold">
+
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="#4B5563"/>
+
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsOverdue}"
+                                         Value="True">
+                                                                <Setter Property="Foreground" Value="#DC2626"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+
+                <Run Text="Due "/>
+                <Run Text="{Binding Deadline, StringFormat={}{0:dd MMM yyyy}}"/>
+                                            </TextBlock>
+                                        </Border>
+
+                                    </WrapPanel>
+
                                 </StackPanel>
 
                                 <!-- Task Actions -->
