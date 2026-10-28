@@ -515,5 +515,45 @@ namespace Workbase
             return statuses;
         }
 
+
+        public static (int TotalTasks, int InProgressTasks, int CompletedTasks)
+            GetTaskStatistics()
+        {
+            using var connection = OpenConnection();
+            using var command = connection.CreateCommand();
+
+            command.CommandText = @"
+                SELECT
+                    COUNT(t.Id) AS TotalTasks,
+                    COALESCE(SUM(
+                        CASE
+                            WHEN s.Name = 'In Progress'
+                                 AND s.IsCompleted = 0
+                            THEN 1
+                            ELSE 0
+                        END
+                    ), 0) AS InProgressTasks,
+                    COALESCE(SUM(
+                        CASE
+                            WHEN s.IsCompleted = 1
+                            THEN 1
+                            ELSE 0
+                        END
+                    ), 0) AS CompletedTasks
+                FROM Tasks t
+                LEFT JOIN ProjectTaskStatuses s
+                    ON s.Id = t.StatusId;
+            ";
+
+            using var reader = command.ExecuteReader();
+            reader.Read();
+
+            return (
+                reader.GetInt32(0),
+                reader.GetInt32(1),
+                reader.GetInt32(2)
+            );
+        }
+
     }
 }

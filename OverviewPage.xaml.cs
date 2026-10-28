@@ -15,6 +15,21 @@ namespace Workbase
             ProjectsItemsControl.ItemsSource = projects;
 
             LoadProjects();
+            LoadStatistics();
+        }
+
+        private void LoadStatistics()
+        {
+            var statistics = DatabaseService.GetTaskStatistics();
+
+            TotalTasksText.Text =
+                statistics.TotalTasks.ToString();
+
+            InProgressTasksText.Text =
+                statistics.InProgressTasks.ToString();
+
+            CompletedTasksText.Text =
+                statistics.CompletedTasks.ToString();
         }
 
         private void LoadProjects()
