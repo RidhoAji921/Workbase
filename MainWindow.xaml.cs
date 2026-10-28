@@ -33,7 +33,14 @@ namespace Workbase
         private void MyTasks_Click(object sender, RoutedEventArgs e)
         {
             MainFrame.Navigate(new MyTasksPage());
-            SetActiveNavigation(MyTaskButton);
+        }
+
+        private void SettingsButton_Click(
+    object sender,
+    RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new SettingsPage()); 
+            SetActiveNavigation(SettingsButton);
         }
 
         private void Overview_Click(
@@ -56,7 +63,8 @@ namespace Workbase
             foreach (var button in new[] {
                 OverviewButton,
                 MyTaskButton,
-                ProjectsButton
+                ProjectsButton,
+                SettingsButton
             })
             {
                 bool isActive = button == activeButton;

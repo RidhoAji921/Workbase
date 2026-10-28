@@ -131,8 +131,10 @@
                                Foreground="#9BA1B1"
                                Margin="10,28,0,12"/>
 
-                    <Button Content="⚙    Settings"
-                            Style="{StaticResource NavButtonStyle}"/>
+                    <Button  x:Name="SettingsButton"
+                        Content="⚙    Settings"
+                            Style="{StaticResource NavButtonStyle}"
+                            Click="SettingsButton_Click"/>
                 </StackPanel>
 
                 <!-- Bottom profile -->
