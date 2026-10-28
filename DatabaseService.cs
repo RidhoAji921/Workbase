@@ -555,5 +555,55 @@ namespace Workbase
             );
         }
 
+        public static List<ProjectTask> GetRecentTasks(int limit = 5)
+        {
+            var tasks = new List<ProjectTask>();
+
+            using var connection = OpenConnection();
+            using var command = connection.CreateCommand();
+
+            command.CommandText = @"
+        SELECT
+            t.Id,
+            t.ProjectId,
+            t.Title,
+            t.Description,
+            t.StatusId,
+            s.Name AS Status,
+            s.IsCompleted,
+            t.Priority,
+            t.Deadline
+        FROM Tasks t
+        LEFT JOIN ProjectTaskStatuses s
+            ON s.Id = t.StatusId
+        ORDER BY t.Id DESC
+        LIMIT @Limit;
+    ";
+
+            command.Parameters.AddWithValue("@Limit", limit);
+
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                tasks.Add(new ProjectTask
+                {
+                    Id = reader.GetInt32(0),
+                    ProjectId = reader.GetInt32(1),
+                    Title = reader.GetString(2),
+                    Description = reader.GetString(3),
+                    StatusId = reader.GetInt32(4),
+                    Status = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                    IsCompleted = !reader.IsDBNull(6) && reader.GetInt32(6) == 1,
+                    Priority = reader.GetString(7),
+                    Deadline = reader.IsDBNull(8)
+                        ? null
+                        : DateTime.Parse(reader.GetString(8))
+                });
+            }
+
+            return tasks;
+        }
+
     }
 }

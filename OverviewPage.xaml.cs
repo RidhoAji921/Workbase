@@ -16,6 +16,7 @@ namespace Workbase
 
             LoadProjects();
             LoadStatistics();
+            LoadRecentTasks();
         }
 
         private void LoadStatistics()
@@ -118,6 +119,12 @@ namespace Workbase
 
             DatabaseService.DeleteProject(project.Id);
             LoadProjects();
+        }
+
+        private void LoadRecentTasks()
+        {
+            RecentTasksItemsControl.ItemsSource =
+                DatabaseService.GetRecentTasks();
         }
     }
 }
