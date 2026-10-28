@@ -1,0 +1,27 @@
+﻿<Page x:Class="Workbase.MyTasksPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="My Tasks"
+      Background="#F7F8FC">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+
+        <StackPanel Margin="32">
+
+            <TextBlock Text="My Tasks"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Foreground="#20243A"/>
+
+            <TextBlock Text="Manage tasks across all your projects."
+                       FontSize="14"
+                       Foreground="#777E91"
+                       Margin="0,8,0,24"/>
+
+            <!-- Kanban board akan ditempatkan di sini -->
+
+        </StackPanel>
+
+    </ScrollViewer>
+</Page>

@@ -226,6 +226,58 @@ namespace Workbase
             transaction.Commit();
         }
 
+        public static List<ProjectTask> GetAllTasks()
+        {
+            var tasks = new List<ProjectTask>();
+
+            using var connection = OpenConnection();
+            using var command = connection.CreateCommand();
+
+            command.CommandText = @"
+        SELECT
+            t.Id,
+            t.ProjectId,
+            t.Title,
+            t.Description,
+            t.StatusId,
+            s.Name,
+            s.IsCompleted,
+            t.Priority,
+            t.Deadline,
+            p.Name AS ProjectName
+        FROM Tasks t
+        INNER JOIN ProjectTaskStatuses s
+            ON s.Id = t.StatusId
+        INNER JOIN Projects p
+            ON p.Id = t.ProjectId
+        ORDER BY t.Id DESC;
+    ";
+
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                tasks.Add(new ProjectTask
+                {
+                    Id = reader.GetInt32(0),
+                    ProjectId = reader.GetInt32(1),
+                    Title = reader.GetString(2),
+                    Description = reader.IsDBNull(3)
+                        ? ""
+                        : reader.GetString(3),
+                    StatusId = reader.GetInt32(4),
+                    Status = reader.GetString(5),
+                    IsCompleted = reader.GetInt32(6) != 0,
+                    Priority = reader.GetString(7),
+                    Deadline = reader.IsDBNull(8)
+                        ? null
+                        : DateTime.Parse(reader.GetString(8)),
+                    ProjectName = reader.GetString(9)
+                });
+            }
+
+            return tasks;
+        }
 
         public static void UpdateProject(
             int id,

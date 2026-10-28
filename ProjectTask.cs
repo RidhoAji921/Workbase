@@ -16,6 +16,8 @@ namespace Workbase
         public string Priority { get; set; } = "Medium";
         public DateTime? Deadline { get; set; }
 
+        public string ProjectName { get; set; } = "";
+
         public bool IsOverdue =>
             Deadline.HasValue &&
             Deadline.Value.Date < DateTime.Today &&

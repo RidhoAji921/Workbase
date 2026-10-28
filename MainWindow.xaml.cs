@@ -30,6 +30,11 @@ namespace Workbase
             SetActiveNavigation(OverviewButton);
         }
 
+        private void MyTasks_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new MyTasksPage());
+        }
+
         private void Overview_Click(
             object sender,
             RoutedEventArgs e)

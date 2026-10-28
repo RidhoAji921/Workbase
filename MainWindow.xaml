@@ -114,8 +114,11 @@
                             FontWeight="SemiBold"
                             Click="Overview_Click"/>
 
-                    <Button Content="☷    My Tasks"
-                            Style="{StaticResource NavButtonStyle}"/>
+                    <Button 
+                         x:Name="MyTaskButton"
+                        Content="☷    My Tasks"
+                            Style="{StaticResource NavButtonStyle}"
+                        Click="MyTasks_Click"/>
 
                     <Button x:Name="ProjectsButton"
                             Content="▣    Projects"
