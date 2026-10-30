@@ -33,6 +33,7 @@ namespace Workbase
         private void MyTasks_Click(object sender, RoutedEventArgs e)
         {
             MainFrame.Navigate(new MyTasksPage());
+            SetActiveNavigation(MyTaskButton);
         }
 
         private void SettingsButton_Click(
