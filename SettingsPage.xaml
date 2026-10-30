@@ -15,12 +15,12 @@
                        FontWeight="Bold"
                        Foreground="#20243A"/>
 
-            <TextBlock Text="Configure your Workbase experience."
+            <TextBlock Text="Application information and data management."
                        FontSize="14"
                        Foreground="#777E91"
                        Margin="0,8,0,28"/>
 
-            <!-- General Section -->
+            <!-- Data & Export Section -->
             <Border Background="White"
                     BorderBrush="#E1E5EE"
                     BorderThickness="1"
@@ -29,36 +29,90 @@
                     Margin="0,0,0,20">
 
                 <StackPanel>
-                    <TextBlock Text="General"
+
+                    <TextBlock Text="Data &amp; Export"
                                FontSize="18"
                                FontWeight="SemiBold"
                                Foreground="#20243A"/>
 
-                    <TextBlock Text="Application preferences and behavior."
+                    <TextBlock Text="Export your projects and tasks for backup or external use."
                                FontSize="13"
                                Foreground="#777E91"
-                               Margin="0,6,0,0"/>
-                </StackPanel>
-            </Border>
+                               Margin="0,6,0,20"/>
 
-            <!-- Data & Storage Section -->
-            <Border Background="White"
-                    BorderBrush="#E1E5EE"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="24"
-                    Margin="0,0,0,20">
-
-                <StackPanel>
-                    <TextBlock Text="Data &amp; Storage"
-                               FontSize="18"
+                    <!-- Export Format -->
+                    <TextBlock Text="Export Format"
+                               FontSize="13"
                                FontWeight="SemiBold"
-                               Foreground="#20243A"/>
+                               Foreground="#20243A"
+                               Margin="0,0,0,8"/>
 
-                    <TextBlock Text="Manage your local data and database."
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,0,0,20">
+
+                        <RadioButton x:Name="JsonFormatRadio"
+                                     Content="JSON"
+                                     GroupName="ExportFormat"
+                                     IsChecked="True"
+                                     FontSize="13"
+                                     Margin="0,0,24,0"/>
+
+                        <RadioButton x:Name="CsvFormatRadio"
+                                     Content="CSV"
+                                     GroupName="ExportFormat"
+                                     FontSize="13"/>
+                    </StackPanel>
+
+                    <!-- Export Contents -->
+                    <TextBlock Text="Export Contents"
                                FontSize="13"
-                               Foreground="#777E91"
-                               Margin="0,6,0,0"/>
+                               FontWeight="SemiBold"
+                               Foreground="#20243A"
+                               Margin="0,0,0,8"/>
+
+                    <StackPanel Margin="0,0,0,20">
+                        <CheckBox Content="Projects"
+                                  IsChecked="True"
+                                  IsEnabled="False"
+                                  Margin="0,4"/>
+
+                        <CheckBox Content="Tasks"
+                                  IsChecked="True"
+                                  IsEnabled="False"
+                                  Margin="0,4"/>
+
+                        <CheckBox Content="Project Task Statuses"
+                                  IsChecked="True"
+                                  IsEnabled="False"
+                                  Margin="0,4"/>
+                    </StackPanel>
+
+                    <!-- Export Button -->
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Export Data"
+            Click="ExportButton_Click"
+            Width="130"
+            Height="38"
+            Margin="0,0,10,0"
+            Background="#4F46E5"
+            Foreground="White"
+            BorderThickness="0"
+            FontWeight="SemiBold"
+            Cursor="Hand"/>
+
+                        <Button Content="Import Data"
+            Click="ImportButton_Click"
+            Width="130"
+            Height="38"
+            Background="#E5E7EB"
+            Foreground="#1F2937"
+            BorderThickness="0"
+            FontWeight="SemiBold"
+            Cursor="Hand"/>
+                    </StackPanel>
+
+
                 </StackPanel>
             </Border>
 
@@ -70,6 +124,7 @@
                     Padding="24">
 
                 <StackPanel>
+
                     <TextBlock Text="About Workbase"
                                FontSize="18"
                                FontWeight="SemiBold"
@@ -78,7 +133,82 @@
                     <TextBlock Text="Application information and version."
                                FontSize="13"
                                Foreground="#777E91"
-                               Margin="0,6,0,0"/>
+                               Margin="0,6,0,20"/>
+
+                    <!-- Application Information -->
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Application"
+                                   Foreground="#777E91"
+                                   FontSize="13"/>
+
+                        <TextBlock Grid.Column="1"
+                                   Text="Workbase"
+                                   Foreground="#20243A"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Version"
+                                   Foreground="#777E91"
+                                   FontSize="13"/>
+
+                        <TextBlock Grid.Column="1"
+                                   Text="0.1.0"
+                                   Foreground="#20243A"
+                                   FontSize="13"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Framework"
+                                   Foreground="#777E91"
+                                   FontSize="13"/>
+
+                        <TextBlock Grid.Column="1"
+                                   Text=".NET 9 / WPF"
+                                   Foreground="#20243A"
+                                   FontSize="13"/>
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Database"
+                                   Foreground="#777E91"
+                                   FontSize="13"/>
+
+                        <TextBlock Grid.Column="1"
+                                   Text="SQLite"
+                                   Foreground="#20243A"
+                                   FontSize="13"/>
+                    </Grid>
+
+                    <Separator Margin="0,20,0,16"
+                               Background="#E1E5EE"/>
+
+                    <TextBlock Text="A desktop application for organizing personal projects and tasks through a Kanban-based workflow."
+                               FontSize="13"
+                               Foreground="#777E91"
+                               TextWrapping="Wrap"/>
+
                 </StackPanel>
             </Border>
 

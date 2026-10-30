@@ -686,5 +686,139 @@ namespace Workbase
 
             return statuses;
         }
+
+        public static void ImportData(WorkbaseExport data)
+        {
+            using var connection = OpenConnection();
+            using var transaction = connection.BeginTransaction();
+
+            try
+            {
+                // 1. Remove existing data
+                ExecuteDelete(connection, transaction,
+                    "DELETE FROM Tasks;");
+
+                ExecuteDelete(connection, transaction,
+                    "DELETE FROM ProjectTaskStatuses;");
+
+                ExecuteDelete(connection, transaction,
+                    "DELETE FROM Projects;");
+
+                // 2. Insert projects
+                foreach (var project in data.Projects)
+                {
+                    using var command = connection.CreateCommand();
+                    command.Transaction = transaction;
+                    command.CommandText = @"
+                INSERT INTO Projects
+                    (Id, Name, Description, Deadline, Status)
+                VALUES
+                    ($id, $name, $description, $deadline, $status);";
+
+                    command.Parameters.AddWithValue("$id", project.Id);
+                    command.Parameters.AddWithValue("$name", project.Name);
+                    command.Parameters.AddWithValue("$description", project.Description ?? "");
+                    command.Parameters.AddWithValue(
+                        "$deadline",
+                        project.Deadline?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("$status", project.Status);
+
+                    command.ExecuteNonQuery();
+                }
+
+                // 3. Insert task statuses
+                foreach (var project in data.Projects)
+                {
+                    foreach (var status in project.TaskStatuses)
+                    {
+                        using var command = connection.CreateCommand();
+                        command.Transaction = transaction;
+                        command.CommandText = @"
+                    INSERT INTO ProjectTaskStatuses
+                        (Id, ProjectId, Name, SortOrder, IsCompleted)
+                    VALUES
+                        ($id, $projectId, $name, $sortOrder, $isCompleted);";
+
+                        command.Parameters.AddWithValue("$id", status.Id);
+                        command.Parameters.AddWithValue("$projectId", project.Id);
+                        command.Parameters.AddWithValue("$name", status.Name);
+                        command.Parameters.AddWithValue("$sortOrder", status.SortOrder);
+                        command.Parameters.AddWithValue("$isCompleted", status.IsCompleted ? 1 : 0);
+
+                        command.ExecuteNonQuery();
+                    }
+                }
+
+                // 4. Insert tasks
+                foreach (var project in data.Projects)
+                {
+                    foreach (var task in project.Tasks)
+                    {
+                        using var command = connection.CreateCommand();
+                        command.Transaction = transaction;
+                        command.CommandText = @"
+                    INSERT INTO Tasks
+                        (Id, Title, Description, ProjectId, StatusId, Priority, Deadline)
+                    VALUES
+                        ($id, $title, $description, $projectId, $statusId, $priority, $deadline);";
+
+                        command.Parameters.AddWithValue("$id", task.Id);
+                        command.Parameters.AddWithValue("$title", task.Title);
+                        command.Parameters.AddWithValue("$description", task.Description ?? "");
+                        command.Parameters.AddWithValue("$projectId", project.Id);
+                        command.Parameters.AddWithValue("$statusId", task.StatusId);
+                        command.Parameters.AddWithValue("$priority", task.Priority);
+                        command.Parameters.AddWithValue(
+                            "$deadline",
+                            task.Deadline?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+
+                        command.ExecuteNonQuery();
+                    }
+                }
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
+        private static void ExecuteDelete(
+            SqliteConnection connection,
+            SqliteTransaction transaction,
+            string sql)
+        {
+            using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = sql;
+            command.ExecuteNonQuery();
+        }
+
+
+        public static void CreateBackup(string backupPath)
+        {
+            string? directory = Path.GetDirectoryName(backupPath);
+
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            using var sourceConnection = OpenConnection();
+
+            var builder = new SqliteConnectionStringBuilder
+            {
+                DataSource = backupPath
+            };
+
+            using var backupConnection = new SqliteConnection(builder.ToString());
+
+            backupConnection.Open();
+
+            sourceConnection.BackupDatabase(backupConnection);
+        }
+
     }
 }
